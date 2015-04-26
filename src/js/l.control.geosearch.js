@@ -183,7 +183,7 @@ L.Control.GeoSearch = L.Control.extend({
                 this._positionMarker.setLatLng([location.Y, location.X]);
         }
 
-        this._map.setView([location.Y, location.X], this._config.zoomLevel, false);
+        this._map.setView([location.Y, location.X], this._map.getZoom(), false);
         this._map.fireEvent('geosearch_showlocation', {Location: location});
     },
 
