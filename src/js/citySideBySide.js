@@ -6,6 +6,9 @@ var city1 = "Tokyo";
 var city2 = "Taipei";
 var zoom = 12;
 
+
+const provider = new GeoSearch.OpenStreetMapProvider();
+
 var params = window.location.href.split("#");
 if (params.length >= 2) {
     params = params[1].split(";");
@@ -15,69 +18,97 @@ if (params.length >= 2) {
         lng1 = parseFloat(params[2]);
         lat2 = parseFloat(params[3]);
         lng2 = parseFloat(params[4]);
-        city1 = unescape(params[5]);
-        city2 = unescape(params[6]);
+        city1 = decodeURIComponent(params[5]);
+        city2 = decodeURIComponent(params[6]);
     }
 }
 
-var osmUrl = 'http://{s}.tile.osm.org/{z}/{x}/{y}.png';
-var basemapA = new L.TileLayer(osmUrl, {
-    maxZoom: 18
+var basemapA = L.tileLayer(osmUrl, {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap'
 });
-var basemapB = new L.TileLayer(osmUrl, {
-    maxZoom: 18
+var basemapB = L.tileLayer(osmUrl, {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap'
 });
 
-var mapA = new L.Map('mapA', {
-    layers: [basemapA],
-    center: new L.LatLng(lat1, lng1),
+var mapA = L.map('mapA', {
+    layers: [],
+    center: new L.latLng(lat1, lng1),
     zoom: zoom
 });
-
-var mapB = new L.Map('mapB', {
-    layers: [basemapB],
-    center: new L.LatLng(lat2, lng2),
+var mapB = L.map('mapB', {
+    layers: [],
+    center: new L.latLng(lat2, lng2),
     zoom: zoom
 });
-
-var googleProvider = new L.GeoSearch.Provider.Google();
-
-var geosearchA = new L.Control.GeoSearch({
-    provider: googleProvider
+var osmUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+var tilesA = L.tileLayer(osmUrl, {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap'
 });
-geosearchA.addTo(mapA);
+var tilesB = L.tileLayer(osmUrl, {
+    maxZoom: 18,
+    attribution: '© OpenStreetMap'
+});
+tilesA.addTo(mapA);
+tilesB.addTo(mapB);
+
+
+const searchA = new GeoSearch.GeoSearchControl({
+    provider: provider,
+    style: 'bar',
+    retainZoomLevel: true,
+    searchLabel: ''
+});
+mapA.addControl(searchA);
 L.control.scale({
     position: 'bottomright'
 }).addTo(mapA);
-geosearchA._searchbox.value = city1
+searchA.searchElement.input.value = city1;
 
-var geosearchB = new L.Control.GeoSearch({
-    provider: googleProvider
+const searchB = new GeoSearch.GeoSearchControl({
+    provider: provider,
+    style: 'bar',
+    retainZoomLevel: true,
+    searchLabel: ''
 });
-geosearchB.addTo(mapB);
+mapB.addControl(searchB);
 L.control.scale({
     position: 'bottomright'
 }).addTo(mapB);
-geosearchB._searchbox.value = city2
+searchB.searchElement.input.value = city2;
 
-mapA.on('moveend', function(e) {
-    mapB.setView(mapB.getCenter(), mapA.getZoom());
+mapA.on('moveend', function (e) {
     updateURL(mapA.getZoom(), mapA.getCenter(), mapB.getCenter())
 });
+mapA.on('zoom', function (e) {
+    mapB.setView(mapB.getCenter(), mapA.getZoom());
+});
 
-mapB.on('moveend', function(e) {
-    mapA.setView(mapA.getCenter(), mapB.getZoom());
+mapB.on('moveend', function (e) {
     updateURL(mapA.getZoom(), mapA.getCenter(), mapB.getCenter())
+});
+mapB.on('zoom', function (e) {
+    mapA.setView(mapA.getCenter(), mapB.getZoom());
 });
 
 function updateURL(zoom, a_center, b_center) {
-    var params = zoom + ";" + parseFloat(a_center.lat.toFixed(4)) + ";" + parseFloat(a_center.lng.toFixed(4)) + ";" + parseFloat(b_center.lat.toFixed(4)) + ";" + parseFloat(b_center.lng.toFixed(4)) + ";" + geosearchA._searchbox.value + ";" + geosearchB._searchbox.value
+    var params =
+        zoom + ";" +
+        parseFloat(a_center.lat.toFixed(4)) + ";" +
+        parseFloat(a_center.lng.toFixed(4)) + ";" +
+        parseFloat(b_center.lat.toFixed(4)) + ";" +
+        parseFloat(b_center.lng.toFixed(4)) + ";" +
+        searchA.searchElement.input.value + ";" +
+        searchB.searchElement.input.value
 
     var url = window.location.href.split("#");
     url = url[0].split("?");
     url = url[0] + "#" + params;
 
     window.location.href = url;
+    console.log(url)
 
-    window.document.title = "City Side By Side: " + geosearchA._searchbox.value + " and " + geosearchB._searchbox.value + "!";
+    window.document.title = "City Side By Side: " + searchA.searchElement.input.value + " and " + searchB.searchElement.input.value + "!";
 }
