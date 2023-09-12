@@ -390,8 +390,6 @@ function initialize() {
 
 // The callback for Maps JS API request.
 function mapsLoaded() {
-  var geocoder = new google.maps.Geocoder();
-  var infoWindow = new google.maps.InfoWindow();
   map = new google.maps.Map(document.getElementById('map-canvasLeft'), {
     zoom: 5,
     center: { lat: 53.01357, lng: 18.597665 }, // Poland
@@ -419,61 +417,14 @@ function mapsLoaded() {
   google.maps.event.addListenerOnce(map, 'tilesloaded', function (e) {
     control.style.display = 'block';
   });
-  google.maps.event.addListener(map, 'click', function (e) {
-    geocoder.geocode({ 'latLng': e.latLng }, function (results, status) {
-      var message = '';
-      var errorDiv = document.getElementById('geocoding-error');
-      if (status !== 'OK') {
-        message = 'Geocoder failed. Please, try your request again.';
-        errorDiv.innerText = message;
-        errorDiv.style.display = 'block';
-        return;
-      }
-      if (!results[0]) {
-        message =
-          'Geocoding found zero results. Please, try a different location.';
-        errorDiv.innerText = message;
-        errorDiv.style.display = 'block';
-        return;
-      }
-      var marker = new google.maps.Marker({
-        position: e.latLng,
-        map: map,
-      });
-      infoWindow.setContent(results[0].formatted_address);
-      infoWindow.open(map, marker);
-    });
+  google.maps.event.addListener(map, 'zoom_changed', function (e) {
+    if (mapRight.getZoom() !== map.getZoom()) {
+      mapRight.setZoom(map.getZoom());
+    }
   });
-  showDirections();
-}
-
-function showDirections() {
-  // Remove directions list to prevent multiple directions listings.
-  var directionsRenderer = new google.maps.DirectionsRenderer({
-    map: map,
-    preserveViewport: true,
-    draggable: true,
-  });
-  directionsRenderer.setPanel(document.getElementById('directions-box'));
-  var sampleRequest = {
-    origin: 'Warsaw, Poland',
-    destination: 'Berlin, Germany',
-    travelMode: google.maps.TravelMode.DRIVING,
-    unitSystem: google.maps.UnitSystem.METRIC,
-  };
-  var directionsService = new google.maps.DirectionsService();
-  directionsService.route(sampleRequest, function (response, status) {
-    var message = '';
-    var errorDiv;
-    if (status === 'OK') {
-      directionsRenderer.setDirections(response);
-    } else {
-      message =
-        'Something went wrong getting directions. ' +
-        'Please, try your request again.';
-      errorDiv = document.getElementById('directions-error');
-      errorDiv.innerText = message;
-      errorDiv.style.display = 'block';
+  google.maps.event.addListener(mapRight, 'zoom_changed', function (e) {
+    if (map.getZoom() !== mapRight.getZoom()) {
+      map.setZoom(mapRight.getZoom());
     }
   });
 }
