@@ -23,10 +23,21 @@ body,
   text-align: right;
 }
 
-#map-canvas {
+/* #map-canvas {
   float: left;
   height: 100%;
   width: 100%;
+} */
+.map-canvas2 {
+  float: left;
+  color: #585858;
+  font-family: Roboto, sans-serif;
+  height: 100%;
+  width: 50%;
+  padding: 0;
+  margin: 0;
+  /* height: 100%;
+  width: 10%; */
 }
 
 #region {
@@ -69,8 +80,8 @@ select {
   width: 60px;
 }
 
-@media (max-width: 900px) {
-  #map-canvas {
-    width: 100%;
+/* @media (max-width: 900px) {
+  .map-canvas {
+    width: 50%;
   }
-}
+} */

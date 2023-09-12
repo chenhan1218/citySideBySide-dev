@@ -338,6 +338,7 @@ var REGIONS = {
 
 
 var map = null;
+var mapRight = null;
 
 // The language/region dropdown listener.
 function cbSelectChange(type) {
@@ -363,7 +364,6 @@ function initialize() {
   if (langCode.length === 2) {
     langCode = langCode.toLowerCase();
   }
-  var regionCode = getUrlParameter('region').toUpperCase();
 
   // Populate the language dropdown.
   var selectLanguage = document.getElementById('language');
@@ -382,28 +382,9 @@ function initialize() {
     selectLanguage.value = langCode;
   }
 
-  // Populate the region dropdown.
-  var selectRegion = document.getElementById('region');
-  selectRegion.options[0] =
-    new Option('Change map region bias', '', true, true);
-
-  fragment = document.createDocumentFragment();
-  var region;
-  for (code in REGIONS) {
-    region = REGIONS[code];
-    fragment.append(new Option(region, code, false, false));
-  }
-  selectRegion.appendChild(fragment);
-  if (regionCode) {
-    selectRegion.value = regionCode;
-  }
-
   // Set dropdown listeners.
   selectLanguage.onchange = function () {
     cbSelectChange.call(selectLanguage, 'language');
-  };
-  selectRegion.onchange = function () {
-    cbSelectChange.call(selectRegion, 'region');
   };
 }
 
@@ -411,7 +392,16 @@ function initialize() {
 function mapsLoaded() {
   var geocoder = new google.maps.Geocoder();
   var infoWindow = new google.maps.InfoWindow();
-  map = new google.maps.Map(document.getElementById('map-canvas'), {
+  map = new google.maps.Map(document.getElementById('map-canvasLeft'), {
+    zoom: 5,
+    center: { lat: 53.01357, lng: 18.597665 }, // Poland
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+    mapTypeControlOptions: {
+      style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+      position: google.maps.ControlPosition.TOP_RIGHT,
+    },
+  });
+  mapRight = new google.maps.Map(document.getElementById('map-canvasRight'), {
     zoom: 5,
     center: { lat: 53.01357, lng: 18.597665 }, // Poland
     mapTypeId: google.maps.MapTypeId.ROADMAP,

@@ -22,10 +22,6 @@
     if (langCode) {
       query += '&language=' + langCode;
     }
-    var regionCode = getUrlParameter('region').toUpperCase();
-    if (regionCode) {
-      query += '&region=' + regionCode;
-    }
     script.src = 'https://maps.googleapis.com/maps/api/js' + query;
     script.setAttribute('async', '');
     script.setAttribute('defer', '');
@@ -50,9 +46,9 @@
   </div>
   <!-- <div id="map"></div> -->
 
-  <!-- <div id="map-canvasLeft" class="map-canvas2"></div>
-  <div id="map-canvasRight" class="map-canvas2"></div> -->
-  <div id="map-canvas"></div>
+  <div id="map-canvasLeft" class="map-canvas2"></div>
+  <div id="map-canvasRight" class="map-canvas2"></div>
+  <!-- <div id="map-canvas"></div> -->
   <!-- <div id="directions-box">Drag directions and click the map to geocode.</div> -->
   <!-- 
       The `defer` attribute causes the callback to execute after the full HTML
