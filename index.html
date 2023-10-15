@@ -1,44 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 
 <head>
-    <title>City Side By Side</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <title>City Side By Side</title>
+  <!-- https://developers.google.com/maps/documentation/javascript/localization -->
+  <!-- https://developers-dot-devsite-v2-prod.appspot.com/maps/documentation/javascript/demos/localization?language=zh-TW -->
+  <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script> -->
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
-        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
-        crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
-        integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-        crossorigin=""></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.6.1/dist/geosearch.css" />
-    <script src="https://unpkg.com/leaflet-geosearch@3.6.1/dist/geosearch.umd.js"></script>
-    <!-- <script src="src/js/l.control.geosearch.js"></script> -->
-    <!-- <script src="src/js/l.geosearch.provider.google.js"></script> -->
-    <!-- <link rel="stylesheet" href="src/css/l.geosearch.css" /> -->
-    <link rel="stylesheet" href="src/css/layout.css" />
-    <link rel="shortcut icon" href="src/images/1430513610_handdrawn-globe-128.png" type="image/x-icon"
-        sizes="16x16 24x24 32x32 64x64" />
-    <link rel="apple-touch-icon" href="src/images/1430513610_handdrawn-globe-128.png" />
-    <meta property="og:title" content="City Side By Side" />
-    <meta property="og:description"
-        content="City side by side, an interactive map-display service. View two cities on the map side by side and discover similarity and difference between them" />
+  <script src="./localization.js"></script>
+  <script>
+    // Build the JS API request node.
+    var script = document.createElement('script');
+    var query = '?key=AIzaSyCfPSLPNmQ9dpglVIDnoEGOk8ZCEyz9ACQ&callback=mapsLoaded';
+    var langCode = getUrlParameter('language');
+    // Try to be generous with accepting upper/lower case.
+    if (langCode.length === 2) {
+      langCode = langCode.toLowerCase();
+    }
+    if (langCode) {
+      query += '&language=' + langCode;
+    }
+    script.src = 'https://maps.googleapis.com/maps/api/js' + query;
+    script.setAttribute('async', '');
+    script.setAttribute('defer', '');
+    document.head.appendChild(script);
+  </script>
+  
+  
+  <script type="module" crossorigin src="./assets/index-4ff57ee6.js"></script>
+  <link rel="stylesheet" href="./assets/index-28d6f8af.css">
 </head>
 
+<body onload=initialize()>
+  <div id="geocoding-error">test geocoding</div>
 
-<body>
-    <!-- <div id="map" style="width: 600px; height: 400px;"></div> -->
+  <div id="selection-box">
+    <p style="margin-top: 0;">
+      Choose a language to update the map.</p>
+    <div id="selection-div">
+      <div>
+        <label class="select-label" for="language">Language</label>
+        <select id="language"></select>
+      </div>
+    </div>
+  </div>
+  <!-- <div id="map"></div> -->
 
-    <div id="mapA"></div>
-    <div id="mapB"></div>
-    <script src="src/js/citySideBySide.js"></script>
-    <!-- <script>
-        var map = L.map('map').setView([51.505, -0.09], 13);
+  <div id="map-canvasLeft" class="map-canvas2"></div>
+  <div id="map-canvasRight" class="map-canvas2"></div>
+  <!-- <div id="map-canvas"></div> -->
+  <!-- <div id="directions-box">Drag directions and click the map to geocode.</div> -->
+  <!-- 
+      The `defer` attribute causes the callback to execute after the full HTML
+      document has been parsed. For non-blocking uses, avoiding race conditions,
+      and consistent behavior across browsers, consider loading using Promises.
+      See https://developers.google.com/maps/documentation/javascript/load-maps-js-api
+      for more information.
+      -->
+  <!-- <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfPSLPNmQ9dpglVIDnoEGOk8ZCEyz9ACQ&callback=initMap&v=weekly&language=en&region=JP"
+    defer></script> -->
 
-        var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-    </script> -->
 </body>
 
 </html>
