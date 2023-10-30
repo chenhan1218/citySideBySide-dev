@@ -339,6 +339,11 @@ var REGIONS = {
 
 var map = null;
 var mapRight = null;
+var lat1 = 35.693;
+var lng1 = 139.750;
+var lat2 = 25.0631;
+var lng2 = 121.5335;
+var zoom = 12;
 
 // The language/region dropdown listener.
 function cbSelectChange(type) {
@@ -391,8 +396,8 @@ function initialize() {
 // The callback for Maps JS API request.
 function mapsLoaded() {
   map = new google.maps.Map(document.getElementById('map-canvasLeft'), {
-    zoom: 5,
-    center: { lat: 53.01357, lng: 18.597665 }, // Poland
+    zoom: zoom,
+    center: { lat: lat1, lng: lng1 },
     mapTypeId: google.maps.MapTypeId.ROADMAP,
     mapTypeControlOptions: {
       style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -400,8 +405,8 @@ function mapsLoaded() {
     },
   });
   mapRight = new google.maps.Map(document.getElementById('map-canvasRight'), {
-    zoom: 5,
-    center: { lat: 53.01357, lng: 18.597665 }, // Poland
+    zoom: zoom,
+    center: { lat: lat2, lng: lng2 },
     mapTypeId: google.maps.MapTypeId.ROADMAP,
     mapTypeControlOptions: {
       style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
