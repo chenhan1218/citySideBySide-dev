@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="src/images/1430513610_handdrawn-globe-128.png" type="image/x-icon"
+        sizes="16x16 24x24 32x32 64x64" />
+    <link rel="apple-touch-icon" href="src/images/1430513610_handdrawn-globe-128.png" />
     <title>City Side By Side</title>
     <meta property="og:description"
         content="City side by side, an interactive map-display service. View two cities on the map side by side and discover similarity and difference between them">
@@ -97,10 +100,56 @@
             opacity: 0;
             transition: opacity 0.3s;
         }
+
+        select {
+            font-size: 1em;
+            width: 220px
+        }
+
+        #selection-div {
+            display: inline
+        }
+
+        #selection-box {
+            background-color: #fff;
+            background-clip: padding-box;
+            box-shadow: #0000004c 0 1px 4px -1px;
+            border-radius: 2.5px;
+            display: inline;
+            font-size: 1.1em;
+            left: 0;
+            margin: 1em;
+            max-height: 200px;
+            max-width: 390px;
+            overflow: auto;
+            padding: .8em;
+            position: absolute;
+            top: 10%;
+            -webkit-user-select: none;
+            -webkit-background-clip: padding-box;
+            z-index: 999;
+        }
+
+        .select-label {
+            display: inline-block;
+            color: #333;
+            font-size: 1em;
+            width: 60px
+        }
     </style>
 </head>
 
-<body>
+<body onload=initialize()>
+    <div id="selection-box">
+        <p style="margin-top: 0;">
+            Choose a language to update the map.</p>
+        <div id="selection-div">
+            <div>
+                <label class="select-label" for="language">Language</label>
+                <select id="language"></select>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <div class="map-container">
             <div id="map1" class="map"></div>
@@ -370,8 +419,7 @@
     </script>
 
     <!-- Import the localization script -->
-    <script
-        src="https://developers-dot-devsite-v2-prod.appspot.com/static/maps/documentation/javascript/demos/localization/localization.js"></script>
+    <script src="./localization.js"></script>
 
     <script>
         // Get language parameter
