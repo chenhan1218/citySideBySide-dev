@@ -1,70 +1,390 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-  <title>City Side By Side</title>
-  <link rel="shortcut icon" href="./assets/1430513610_handdrawn-globe-128-803c0b98.png" type="image/x-icon"
-    sizes="16x16 24x24 32x32 64x64" />
-  <!-- https://developers.google.com/maps/documentation/javascript/localization -->
-  <!-- https://developers-dot-devsite-v2-prod.appspot.com/maps/documentation/javascript/demos/localization?language=zh-TW -->
-  <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script> -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Side By Side</title>
+    <meta property="og:description"
+        content="City side by side, an interactive map-display service. View two cities on the map side by side and discover similarity and difference between them">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <script src="./localization.js"></script>
-  <script>
-    // Build the JS API request node.
-    var script = document.createElement('script');
-    var query = '?key=AIzaSyCfPSLPNmQ9dpglVIDnoEGOk8ZCEyz9ACQ&callback=mapsLoaded';
-    var langCode = getUrlParameter('language');
-    // Try to be generous with accepting upper/lower case.
-    if (langCode.length === 2) {
-      langCode = langCode.toLowerCase();
-    }
-    if (langCode) {
-      query += '&language=' + langCode;
-    }
-    script.src = 'https://maps.googleapis.com/maps/api/js' + query;
-    script.setAttribute('async', '');
-    script.setAttribute('defer', '');
-    document.head.appendChild(script);
-  </script>
-  
-  
-  <script type="module" crossorigin src="./assets/index-4ff57ee6.js"></script>
-  <link rel="stylesheet" href="./assets/index-28d6f8af.css">
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .map-container {
+            flex: 1;
+            padding: 10px;
+            position: relative;
+        }
+
+        .map {
+            height: 100%;
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .search-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            font-size: 16px;
+        }
+
+        .coordinates {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            text-align: center;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .copy-link {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .copy-link:hover {
+            background-color: #3367D6;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+    </style>
 </head>
 
-<body onload=initialize()>
-  <div id="geocoding-error">test geocoding</div>
-
-  <div id="selection-box">
-    <p style="margin-top: 0;">
-      Choose a language to update the map.</p>
-    <div id="selection-div">
-      <div>
-        <label class="select-label" for="language">Language</label>
-        <select id="language"></select>
-      </div>
+<body>
+    <div class="container">
+        <div class="map-container">
+            <div id="map1" class="map"></div>
+            <div class="search-box">
+                <input id="left-search" class="search-input" type="text" placeholder="Search left map location">
+            </div>
+        </div>
+        <div class="map-container">
+            <div id="map2" class="map"></div>
+            <div class="search-box">
+                <input id="right-search" class="search-input" type="text" placeholder="Search right map location">
+            </div>
+        </div>
     </div>
-  </div>
-  <!-- <div id="map"></div> -->
 
-  <div id="map-canvasLeft" class="map-canvas2"></div>
-  <div id="map-canvasRight" class="map-canvas2"></div>
-  <!-- <div id="map-canvas"></div> -->
-  <!-- <div id="directions-box">Drag directions and click the map to geocode.</div> -->
-  <!-- 
-      The `defer` attribute causes the callback to execute after the full HTML
-      document has been parsed. For non-blocking uses, avoiding race conditions,
-      and consistent behavior across browsers, consider loading using Promises.
-      See https://developers.google.com/maps/documentation/javascript/load-maps-js-api
-      for more information.
-      -->
-  <!-- <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfPSLPNmQ9dpglVIDnoEGOk8ZCEyz9ACQ&callback=initMap&v=weekly&language=en&region=JP"
-    defer></script> -->
+    <div class="coordinates" id="coordinates-display">
+        Loading coordinates...
+        <button id="copy-link" class="copy-link">Copy Link</button>
+    </div>
 
+    <div id="notification" class="notification">Link copied to clipboard!</div>
+
+    <script>
+        let map1, map2;
+        let isSyncingMap1 = false;
+        let isSyncingMap2 = false;
+        let leftLocation = "";
+        let rightLocation = "";
+        let currentLanguage = "en";
+
+        // Function to parse URL parameters
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const defaultParams = {
+                leftLat: 35.6762,
+                leftLng: 139.6503,
+                rightLat: 25.0330,
+                rightLng: 121.5654,
+                zoom: 10,
+                leftLocation: "",
+                rightLocation: "",
+                language: "en"
+            };
+
+            // Get language parameter
+            currentLanguage = params.get('language') || defaultParams.language;
+
+            return {
+                leftLat: parseFloat(params.get('leftLat')) || defaultParams.leftLat,
+                leftLng: parseFloat(params.get('leftLng')) || defaultParams.leftLng,
+                rightLat: parseFloat(params.get('rightLat')) || defaultParams.rightLat,
+                rightLng: parseFloat(params.get('rightLng')) || defaultParams.rightLng,
+                zoom: parseInt(params.get('zoom')) || defaultParams.zoom,
+                leftLocation: params.get('leftLocation') || defaultParams.leftLocation,
+                rightLocation: params.get('rightLocation') || defaultParams.rightLocation,
+                language: currentLanguage
+            };
+        }
+
+        // Function to generate shareable link
+        function generateShareableLink() {
+            if (!map1 || !map2) return "";
+
+            const center1 = map1.getCenter();
+            const center2 = map2.getCenter();
+            const zoom = map1.getZoom();
+
+            const leftLat = center1.lat().toFixed(4);
+            const leftLng = center1.lng().toFixed(4);
+            const rightLat = center2.lat().toFixed(4);
+            const rightLng = center2.lng().toFixed(4);
+
+            const url = new URL(window.location.origin + window.location.pathname);
+            url.searchParams.set('leftLat', leftLat);
+            url.searchParams.set('leftLng', leftLng);
+            url.searchParams.set('rightLat', rightLat);
+            url.searchParams.set('rightLng', rightLng);
+            url.searchParams.set('zoom', zoom);
+            url.searchParams.set('language', currentLanguage);
+
+            if (leftLocation) {
+                url.searchParams.set('leftLocation', leftLocation);
+            }
+
+            if (rightLocation) {
+                url.searchParams.set('rightLocation', rightLocation);
+            }
+
+            return url.toString();
+        }
+
+        // Function to update coordinate display (without changing URL)
+        function updateCoordinateDisplay() {
+            if (!map1 || !map2) return;
+
+            const center1 = map1.getCenter();
+            const center2 = map2.getCenter();
+            const zoom = map1.getZoom();
+
+            const leftLat = center1.lat().toFixed(4);
+            const leftLng = center1.lng().toFixed(4);
+            const rightLat = center2.lat().toFixed(4);
+            const rightLng = center2.lng().toFixed(4);
+
+            // Update coordinates display
+            document.getElementById('coordinates-display').innerHTML =
+                `Left: ${leftLat}, ${leftLng} | Right: ${rightLat}, ${rightLng} | Zoom: ${zoom}` +
+                `<button id="copy-link" class="copy-link">Copy Link</button>`;
+
+            // Reinitialize copy button after updating display
+            document.getElementById('copy-link').addEventListener('click', copyLinkToClipboard);
+
+            // Update page title with locations
+            updatePageTitle();
+        }
+
+        // Copy link to clipboard
+        function copyLinkToClipboard() {
+            const shareableLink = generateShareableLink();
+            navigator.clipboard.writeText(shareableLink).then(function () {
+                showNotification();
+            });
+        }
+
+        // Show notification
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.style.opacity = "1";
+            setTimeout(function () {
+                notification.style.opacity = "0";
+            }, 2000);
+        }
+
+        // Update page title based on search locations
+        function updatePageTitle() {
+            let title = "City Side By Side";
+
+            if (leftLocation && rightLocation) {
+                title = `${leftLocation} vs ${rightLocation} - City Side By Side`;
+            } else if (leftLocation) {
+                title = `${leftLocation} - City Side By Side`;
+            } else if (rightLocation) {
+                title = `${rightLocation} - City Side By Side`;
+            }
+
+            document.title = title;
+        }
+
+        // Initialize the maps when the Google Maps API is loaded
+        function initMaps() {
+            // Get coordinates from URL or use defaults
+            const params = getUrlParams();
+            leftLocation = params.leftLocation;
+            rightLocation = params.rightLocation;
+
+            // Map options - enable all controls including scale
+            const mapOptions = {
+                zoom: params.zoom,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                streetViewControl: true,
+                scaleControl: true,
+                zoomControl: true,
+                mapTypeControl: true,
+                fullscreenControl: true
+            };
+
+            // Create the first map centered on URL coordinates or Tokyo
+            map1 = new google.maps.Map(document.getElementById('map1'), {
+                ...mapOptions,
+                center: { lat: params.leftLat, lng: params.leftLng }
+            });
+
+            // Create the second map centered on URL coordinates or Taipei
+            map2 = new google.maps.Map(document.getElementById('map2'), {
+                ...mapOptions,
+                center: { lat: params.rightLat, lng: params.rightLng }
+            });
+
+            // Create geocoder for search functionality
+            const geocoder = new google.maps.Geocoder();
+
+            // Initialize search boxes
+            const leftSearchBox = document.getElementById('left-search');
+            const rightSearchBox = document.getElementById('right-search');
+
+            // Set initial values if available from URL
+            if (leftLocation) {
+                leftSearchBox.value = leftLocation;
+            }
+
+            if (rightLocation) {
+                rightSearchBox.value = rightLocation;
+            }
+
+            // Left search functionality
+            leftSearchBox.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    const address = this.value;
+                    if (address.trim() === "") return;
+
+                    geocoder.geocode({ 'address': address }, function (results, status) {
+                        if (status === 'OK') {
+                            leftLocation = address;
+                            map1.setCenter(results[0].geometry.location);
+                            updateCoordinateDisplay();
+                            updatePageTitle();
+                        } else {
+                            alert('Geocode was not successful for the following reason: ' + status);
+                        }
+                    });
+                }
+            });
+
+            // Right search functionality
+            rightSearchBox.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    const address = this.value;
+                    if (address.trim() === "") return;
+
+                    geocoder.geocode({ 'address': address }, function (results, status) {
+                        if (status === 'OK') {
+                            rightLocation = address;
+                            map2.setCenter(results[0].geometry.location);
+                            updateCoordinateDisplay();
+                            updatePageTitle();
+                        } else {
+                            alert('Geocode was not successful for the following reason: ' + status);
+                        }
+                    });
+                }
+            });
+
+            // Add event listeners for zoom and bounds changes
+            map1.addListener('zoom_changed', function () {
+                if (!isSyncingMap1) {
+                    isSyncingMap2 = true;
+                    map2.setZoom(map1.getZoom());
+                    updateCoordinateDisplay();
+                }
+                isSyncingMap1 = false;
+            });
+
+            map2.addListener('zoom_changed', function () {
+                if (!isSyncingMap2) {
+                    isSyncingMap1 = true;
+                    map1.setZoom(map2.getZoom());
+                    updateCoordinateDisplay();
+                }
+                isSyncingMap2 = false;
+            });
+
+            // Add drag end events to update coordinates display
+            map1.addListener('dragend', updateCoordinateDisplay);
+            map2.addListener('dragend', updateCoordinateDisplay);
+
+            // Add idle event to ensure coordinates display updates when map stops any movement
+            map1.addListener('idle', updateCoordinateDisplay);
+            map2.addListener('idle', updateCoordinateDisplay);
+
+            // Initialize copy link button
+            document.getElementById('copy-link').addEventListener('click', copyLinkToClipboard);
+
+            // Initial update of coordinates and title
+            updateCoordinateDisplay();
+            updatePageTitle();
+        }
+    </script>
+
+    <!-- Import the localization script -->
+    <script
+        src="https://developers-dot-devsite-v2-prod.appspot.com/static/maps/documentation/javascript/demos/localization/localization.js"></script>
+
+    <script>
+        // Get language parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const language = urlParams.get('language') || 'en';
+
+        // Dynamically create Google Maps script with language parameter
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDSLt1qZ1A1iMgqoMXboKnq7D1s3uQGkog&callback=initMaps&language=${language}`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    </script>
 </body>
 
 </html>
